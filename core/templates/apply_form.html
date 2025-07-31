@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-success text-white d-flex align-items-center">
+          <i class="bi bi-send-fill fs-3 me-2"></i>
+          <h4 class="mb-0">Apply for: {{ job.title }}</h4>
+        </div>
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="id_resume" class="form-label fw-semibold">
+                <i class="bi bi-file-earmark-arrow-up-fill me-1"></i>Upload Resume
+              </label>
+              <input type="file" name="resume" id="id_resume" class="form-control" required>
+            </div>
+            <div class="mb-4">
+              <label for="id_cover_letter" class="form-label fw-semibold">
+                <i class="bi bi-card-text me-1"></i>Cover Letter
+              </label>
+              <textarea name="cover_letter" id="id_cover_letter" rows="6"
+                        class="form-control" placeholder="Write your cover letter here..." required></textarea>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle-fill me-1"></i> Submit Application
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
