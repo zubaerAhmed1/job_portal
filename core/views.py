@@ -132,17 +132,24 @@ def apply_to_job(request, job_id):
 def my_applications(request):
     if request.user.userrole.role != 'applicant':
         return redirect('dashboard')
-    applications = Application.objects.filter(applicant=request.user)
-    return render(request, 'my_applications.html', {'applications': applications})
+    status_filter = request.GET.get('status')
+    apps = Application.objects.filter(applicant=request.user)
+    if status_filter in dict(Application.STATUS_CHOICES):
+        apps = apps.filter(status=status_filter)
+    return render(request, 'my_applications.html', {
+        'applications': apps,
+        'status_filter': status_filter,
+    })
 
 # Employer: view applicants for a specific job
 @login_required
 def view_applicants(request, job_id):
-    job = get_object_or_404(Job, id=job_id)
-    if job.posted_by != request.user:
-        return redirect('dashboard')
-    applications = Application.objects.filter(job=job)
-    return render(request, 'view_applicants.html', {'applications': applications, 'job': job})
+    job = get_object_or_404(Job, id=job_id, posted_by=request.user)
+    applications = Application.objects.filter(job=job).order_by('-applied_at')
+    return render(request, 'view_applicants.html', {
+        'job': job,
+        'applications': applications,
+    })
 
 
 
@@ -165,6 +172,19 @@ def home(request):
     if request.user.is_authenticated and hasattr(request.user, 'userrole'):
         return redirect('dashboard')
     return render(request, 'home.html')
+
+
+@login_required
+def change_application_status(request, app_id):
+    application = get_object_or_404(Application, id=app_id, job__posted_by=request.user)
+    new_status = request.POST.get('status')
+    if new_status in dict(Application.STATUS_CHOICES):
+        application.status = new_status
+        application.save()
+        messages.success(request, f"Application for {application.applicant.username} marked {new_status}.")
+    else:
+        messages.error(request, "Invalid status.")
+    return redirect('view_applicants', job_id=application.job.id)
 
 
 
